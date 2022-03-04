@@ -2,17 +2,24 @@ export const query = {
 query: `
 {
     viewer {
-     name
-      repositories(last: 10){
-        nodes {
+      name
+    }
+    search(
+      query: "user:thejasonjones sort:updated-desc"
+      type: REPOSITORY
+      first: 10
+    ) {
+      nodes {
+        ... on Repository {
+          id
           name
           description
-          id
           url
+          viewerSubscription
         }
       }
     }
-  }
+}
 `
 };
 
