@@ -3,6 +3,7 @@ import github from "./db.js";
 import { query } from "./Query";
 
 import "./custom.scss";
+import RepoListItem from "./repoListItem.js";
 
 function App() {
   let [userName, setuserName] = useState('');
@@ -22,9 +23,9 @@ function App() {
     .then(response => response.json())
     .then(d => {
       const { data } = d;
-      console.log(data);
+      
       setuserName(data.viewer);
-      setRepoList(data.viewer.repositories.nodes)
+      setRepoList(data.search.nodes)
     })
     .catch(err => console.error(err))
   }, [])
@@ -34,18 +35,16 @@ function App() {
   }, [fetchData])
 
   const { name } = userName;
-  console.log('repo',repoList);
+
   return (
     <div className="container mt-5">
       <h1 className="text-primary"><i className="bi bi-diagram-2-fill"></i>Repos</h1>
       <p><strong>{name}</strong></p>
       { repoList && (
         <ul className="list-group list-group-flush">
-          {repoList.map(repo => <li key={repo.id} className="list-group-item">
-            <a href={repo.url} className="h5 mb-0 text-decoration-none">
-              {repo.name}</a>
-              <p className="small">{repo.description}</p>
-          </li>)}
+          {repoList.map(repo =>
+            <RepoListItem key={repo.id} {...repo} />
+          )}
         </ul>
       )}
     </div>
