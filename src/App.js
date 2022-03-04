@@ -7,12 +7,17 @@ import "./custom.scss";
 function App() {
   let [userName, setuserName] = useState('');
   let [repoList, setRepoList] = useState(null);
+  let [pageCount, setPageCount] = useState('slides');
+  let [queryString, setQueryString] = useState(10);
+  let [totalCount, setTotalCount] = useState('slides');
 
   const fetchData = useCallback( () => {
+    const queryText = JSON.stringify(query(pageCount, queryString));
+
     fetch(github.baseURL, {
       method: "POST",
       headers: github.headers, 
-      body: JSON.stringify(query)
+      body: queryText
     })
     .then(response => response.json())
     .then(d => {
