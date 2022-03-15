@@ -1,14 +1,17 @@
-export const query = {
-query: `
+export const query = (pageCount, queryString) => {
+
+return { 
+  query: `
 {
     viewer {
       name
     }
     search(
-      query: "user:thejasonjones sort:updated-desc"
+      query: "${queryString} user:thejasonjones sort:updated-desc"
       type: REPOSITORY
-      first: 10
+      first: ${pageCount}
     ) {
+      repositoryCount
       nodes {
         ... on Repository {
           id
@@ -20,6 +23,6 @@ query: `
       }
     }
 }
-`
+`}
 };
 
