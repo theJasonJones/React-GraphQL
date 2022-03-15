@@ -4,16 +4,25 @@ import { query } from "./Query";
 
 import "./custom.scss";
 import RepoListItem from "./repoListItem.js";
+import SearchBox from "./SearchBox.js";
+import NavButtons from "./NavButton.js";
 
 function App() {
   let [userName, setuserName] = useState('');
   let [repoList, setRepoList] = useState(null);
-  let [pageCount, setPageCount] = useState(10);
+  let [pageCount, setPageCount] = useState(5);
   let [queryString, setQueryString] = useState("react");
   let [totalCount, setTotalCount] = useState(null);
 
+  let [startCursor, setStartCursor] = useState(null);
+  let [endCursor, setEndCursor] = useState(null);
+  let [hasPreviousPage, setPreviousPage] = useState(false);
+  let [hasNextPage, setHasNextpage] = useState(true);
+  let [paginationKeyword, setPaginationKeyword] = useState("first");
+  let [paginationString, setPaginationString] = useState("");
+
   const fetchData = useCallback( () => {
-    const queryText = JSON.stringify(query(pageCount, queryString));
+    const queryText = JSON.stringify(query(pageCount, queryString, paginationKeyword, paginationString));
 
     fetch(github.baseURL, {
       method: "POST",
@@ -22,18 +31,19 @@ function App() {
     })
     .then(response => response.json())
     .then(d => {
-      console.log('d', d);
       const { data } = d;
       console.log('data', data);
       
       setuserName(data.viewer);
-      setRepoList(data.search.nodes)
-
-      //setPageCount(data.search.repositoryCount)
-      setTotalCount(data.search.repositoryCount)
+      setRepoList(data.search.edges);
+      setTotalCount(data.search.repositoryCount);
+      setStartCursor(data.search.pageInfo?.startCursor);
+      setEndCursor(data.search.pageInfo?.endCursor);
+      setHasNextpage(data.search.pageInfo?.hasNextPage);
+      setPreviousPage(data.search.pageInfo?.hasPreviousPage);
     })
     .catch(err => console.error(err))
-  }, [pageCount, queryString])
+  }, [pageCount, queryString, paginationString, paginationKeyword])
 
   useEffect(() => {
     fetchData()
@@ -45,13 +55,30 @@ function App() {
     <div className="container mt-5">
       <h1 className="text-primary"><i className="bi bi-diagram-2-fill"></i>Repos</h1>
       <p><strong>Hello {name}</strong></p>
+      <SearchBox
+        totalCount={totalCount}
+        pageCount={pageCount}
+        queryString={queryString}
+        onQueryChange={(myString) =>{ setQueryString(myString)}}
+        onTotalChange={(myNumber) =>{ setPageCount(myNumber)}}
+      />
+      <NavButtons
+        start={startCursor}
+        end={endCursor}
+        next={hasNextPage}
+        previous={hasPreviousPage}
+        onPage={(myKeyword, myString) => {
+          setPaginationKeyword(myKeyword);
+          setPaginationString(myString);
+        }}
+      />
       <p>
         <strong>Search for: {queryString}</strong> | <strong>Items per page: {pageCount}</strong> | <strong>Repos found: {totalCount}</strong>
       </p>
       { repoList && (
         <ul className="list-group list-group-flush">
           {repoList.map(repo =>
-            <RepoListItem key={repo.id} {...repo} />
+            <RepoListItem key={repo.node.id} {...repo.node} />
           )}
         </ul>
       )}

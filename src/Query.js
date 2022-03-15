@@ -1,4 +1,4 @@
-export const query = (pageCount, queryString) => {
+export const query = (pageCount, queryString, pagenationKeyword, pagenationString) => {
 
 return { 
   query: `
@@ -9,17 +9,27 @@ return {
     search(
       query: "${queryString} user:thejasonjones sort:updated-desc"
       type: REPOSITORY
-      first: ${pageCount}
+      ${pagenationKeyword}: ${pageCount}
+      ${pagenationString}
     ) {
       repositoryCount
-      nodes {
-        ... on Repository {
-          id
-          name
-          description
-          url
-          viewerSubscription
+      edges {
+        cursor
+        node {
+          ... on Repository {
+            id
+            name
+            description
+            url
+            viewerSubscription
+          }
         }
+      }
+      pageInfo {
+        startCursor
+        endCursor
+        hasNextPage
+        hasPreviousPage
       }
     }
 }
